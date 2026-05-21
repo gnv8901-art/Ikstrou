@@ -1,0 +1,2137 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ИК «ПромТехСервис» — Бизнес-дашборд</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+  :root {
+    --bg: #0a0e1a;
+    --bg2: #0f1628;
+    --card: #141c32;
+    --card2: #1a2440;
+    --border: #1e2d4a;
+    --accent: #00d4ff;
+    --accent2: #7c3aed;
+    --accent3: #10b981;
+    --accent4: #f59e0b;
+    --accent5: #ef4444;
+    --accent6: #ec4899;
+    --text: #e2e8f0;
+    --text2: #94a3b8;
+    --text3: #64748b;
+    --glow: 0 0 20px rgba(0,212,255,0.15);
+    --glow2: 0 0 20px rgba(124,58,237,0.15);
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Animated background */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(ellipse at 20% 20%, rgba(0,212,255,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(124,58,237,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(16,185,129,0.02) 0%, transparent 60%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper { position: relative; z-index: 1; }
+
+  /* ─── HEADER ─── */
+  header {
+    background: linear-gradient(135deg, #0d1526 0%, #111827 50%, #0d1526 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 0 24px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+  }
+
+  .header-inner {
+    max-width: 1600px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+  }
+
+  .logo-block { display: flex; align-items: center; gap: 12px; }
+
+  .logo-icon {
+    width: 40px; height: 40px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    box-shadow: 0 0 20px rgba(0,212,255,0.3);
+  }
+
+  .logo-text h1 {
+    font-size: 15px; font-weight: 800; letter-spacing: 0.5px;
+    background: linear-gradient(90deg, var(--accent), #a78bfa);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .logo-text p { font-size: 10px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+
+  .header-right { display: flex; align-items: center; gap: 16px; }
+
+  .live-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(16,185,129,0.1);
+    border: 1px solid rgba(16,185,129,0.3);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 11px; color: var(--accent3); font-weight: 600;
+  }
+
+  .live-dot {
+    width: 7px; height: 7px;
+    background: var(--accent3);
+    border-radius: 50%;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.5; transform: scale(0.8); }
+  }
+
+  .date-block { font-size: 12px; color: var(--text2); }
+
+  .nav-tabs {
+    display: flex; gap: 4px;
+  }
+
+  .nav-tab {
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 12px; font-weight: 500;
+    cursor: pointer; border: none;
+    background: transparent; color: var(--text2);
+    transition: all 0.2s;
+  }
+
+  .nav-tab.active, .nav-tab:hover {
+    background: rgba(0,212,255,0.1);
+    color: var(--accent);
+  }
+
+  /* ─── MAIN LAYOUT ─── */
+  main {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 20px 24px 40px;
+  }
+
+  /* ─── SECTION TITLES ─── */
+  .section-title {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 16px; margin-top: 28px;
+  }
+
+  .section-title .icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+
+  .section-title h2 {
+    font-size: 16px; font-weight: 700; color: var(--text);
+  }
+
+  .section-title span {
+    font-size: 11px; color: var(--text3);
+    background: var(--card2);
+    padding: 2px 8px; border-radius: 10px;
+  }
+
+  /* ─── GRID SYSTEM ─── */
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+  .grid-custom { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 16px; }
+  .grid-custom2 { display: grid; grid-template-columns: 1fr 2fr; gap: 16px; }
+  .grid-custom3 { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 16px; }
+
+  /* ─── CARDS ─── */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .card:hover {
+    border-color: rgba(0,212,255,0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3), var(--glow);
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--accent), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .card:hover::before { opacity: 1; }
+
+  /* ─── KPI CARDS ─── */
+  .kpi-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s;
+  }
+
+  .kpi-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+  }
+
+  .kpi-card .accent-line {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 3px;
+    border-radius: 16px 16px 0 0;
+  }
+
+  .kpi-card .bg-glow {
+    position: absolute;
+    top: -20px; right: -20px;
+    width: 80px; height: 80px;
+    border-radius: 50%;
+    opacity: 0.08;
+    filter: blur(20px);
+  }
+
+  .kpi-label {
+    font-size: 11px; font-weight: 500;
+    color: var(--text3); text-transform: uppercase;
+    letter-spacing: 0.8px; margin-bottom: 8px;
+  }
+
+  .kpi-value {
+    font-size: 26px; font-weight: 800;
+    letter-spacing: -0.5px;
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .kpi-sub {
+    font-size: 11px; color: var(--text2);
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  .kpi-icon {
+    position: absolute;
+    right: 16px; top: 50%;
+    transform: translateY(-50%);
+    font-size: 32px;
+    opacity: 0.15;
+  }
+
+  .trend-up { color: var(--accent3); }
+  .trend-down { color: var(--accent5); }
+
+  /* ─── STATUS PIPELINE ─── */
+  .pipeline {
+    display: flex; gap: 0;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .pipeline-stage {
+    flex: 1;
+    padding: 16px 12px;
+    text-align: center;
+    border-right: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.2s;
+    position: relative;
+  }
+
+  .pipeline-stage:last-child { border-right: none; }
+  .pipeline-stage:hover { background: var(--card2); }
+
+  .pipeline-stage .stage-num {
+    font-size: 28px; font-weight: 900;
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+
+  .pipeline-stage .stage-label {
+    font-size: 10px; color: var(--text2);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .pipeline-stage .stage-arrow {
+    position: absolute;
+    right: -8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: var(--text3);
+    z-index: 1;
+  }
+
+  /* ─── REQUESTS TABLE ─── */
+  .table-wrap { overflow: hidden; border-radius: 12px; }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+
+  thead tr {
+    background: var(--card2);
+  }
+
+  thead th {
+    padding: 10px 14px;
+    text-align: left;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid rgba(30,45,74,0.6);
+    transition: background 0.15s;
+  }
+
+  tbody tr:hover { background: var(--card2); }
+
+  tbody td {
+    padding: 10px 14px;
+    color: var(--text);
+    font-size: 12px;
+  }
+
+  /* ─── BADGES ─── */
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .badge-new { background: rgba(0,212,255,0.12); color: var(--accent); border: 1px solid rgba(0,212,255,0.2); }
+  .badge-approved { background: rgba(245,158,11,0.12); color: var(--accent4); border: 1px solid rgba(245,158,11,0.2); }
+  .badge-done { background: rgba(16,185,129,0.12); color: var(--accent3); border: 1px solid rgba(16,185,129,0.2); }
+  .badge-closed { background: rgba(100,116,139,0.12); color: var(--text3); border: 1px solid rgba(100,116,139,0.2); }
+  .badge-design { background: rgba(124,58,237,0.12); color: #a78bfa; border: 1px solid rgba(124,58,237,0.2); }
+  .badge-build { background: rgba(239,68,68,0.12); color: var(--accent5); border: 1px solid rgba(239,68,68,0.2); }
+
+  /* ─── PROGRESS BAR ─── */
+  .progress-wrap { margin-top: 6px; }
+
+  .progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 11px; color: var(--text2);
+    margin-bottom: 5px;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: var(--bg2);
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s ease;
+  }
+
+  /* ─── FUEL CARD ─── */
+  .driver-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(30,45,74,0.5);
+  }
+
+  .driver-row:last-child { border-bottom: none; }
+
+  .driver-avatar {
+    width: 34px; height: 34px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .driver-info { flex: 1; }
+  .driver-name { font-size: 12px; font-weight: 600; margin-bottom: 2px; }
+  .driver-car { font-size: 10px; color: var(--text3); }
+
+  .driver-stats {
+    display: flex; gap: 16px;
+    text-align: right;
+  }
+
+  .driver-stat-item { }
+  .driver-stat-val { font-size: 13px; font-weight: 700; }
+  .driver-stat-label { font-size: 9px; color: var(--text3); text-transform: uppercase; }
+
+  /* ─── CONSTRUCTION ─── */
+  .building-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px;
+    transition: all 0.3s;
+  }
+
+  .building-card:hover {
+    border-color: rgba(124,58,237,0.3);
+    box-shadow: var(--glow2);
+    transform: translateY(-2px);
+  }
+
+  .building-header {
+    display: flex; justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+
+  .building-name { font-size: 14px; font-weight: 700; margin-bottom: 3px; }
+  .building-addr { font-size: 11px; color: var(--text2); }
+
+  .floors-visual {
+    display: flex; flex-direction: column-reverse;
+    gap: 3px;
+    margin: 14px 0;
+  }
+
+  .floor-row {
+    display: flex; align-items: center; gap: 8px;
+  }
+
+  .floor-label { font-size: 9px; color: var(--text3); width: 30px; text-align: right; }
+
+  .floor-bar-wrap {
+    flex: 1;
+    height: 14px;
+    background: var(--bg2);
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .floor-bar {
+    height: 100%;
+    border-radius: 4px;
+    display: flex; align-items: center;
+    padding: 0 6px;
+    font-size: 9px; font-weight: 600;
+    color: white;
+    transition: width 1s ease;
+  }
+
+  .floor-status { font-size: 9px; color: var(--text3); width: 60px; }
+
+  /* ─── P&L TABLE ─── */
+  .pl-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+  .pl-section-row td {
+    padding: 12px 14px 6px;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    background: var(--bg2);
+  }
+
+  .pl-row td {
+    padding: 8px 14px;
+    border-bottom: 1px solid rgba(30,45,74,0.4);
+    color: var(--text);
+  }
+
+  .pl-row:hover td { background: var(--card2); }
+
+  .pl-total td {
+    padding: 12px 14px;
+    font-weight: 800;
+    font-size: 13px;
+    background: rgba(0,212,255,0.05);
+    border-top: 1px solid rgba(0,212,255,0.1);
+  }
+
+  .pl-profit td {
+    padding: 14px;
+    font-weight: 900;
+    font-size: 15px;
+    background: rgba(16,185,129,0.08);
+    border-top: 2px solid var(--accent3);
+    color: var(--accent3);
+  }
+
+  /* ─── DONUT STAT ─── */
+  .donut-wrap {
+    display: flex; align-items: center; gap: 20px;
+  }
+
+  .donut-legend { flex: 1; }
+
+  .legend-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 5px 0;
+    border-bottom: 1px solid rgba(30,45,74,0.4);
+  }
+
+  .legend-item:last-child { border-bottom: none; }
+
+  .legend-dot { width: 10px; height: 10px; border-radius: 3px; flex-shrink: 0; }
+  .legend-name { flex: 1; font-size: 11px; color: var(--text2); }
+  .legend-val { font-size: 12px; font-weight: 700; }
+  .legend-pct { font-size: 10px; color: var(--text3); width: 30px; text-align: right; }
+
+  /* ─── DESIGN PROJECTS ─── */
+  .project-card {
+    background: var(--bg2);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 10px;
+  }
+
+  .project-card:last-child { margin-bottom: 0; }
+
+  .project-header {
+    display: flex; justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .project-name { font-size: 13px; font-weight: 700; }
+  .project-type { font-size: 10px; color: var(--text3); }
+
+  .stages-track {
+    display: flex; gap: 3px;
+    margin-bottom: 8px;
+  }
+
+  .stage-block {
+    flex: 1;
+    height: 20px;
+    border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px; font-weight: 700;
+    color: rgba(255,255,255,0.8);
+  }
+
+  /* ─── ALERT STRIP ─── */
+  .alert-strip {
+    background: linear-gradient(90deg, rgba(245,158,11,0.1), rgba(245,158,11,0.05));
+    border: 1px solid rgba(245,158,11,0.2);
+    border-radius: 10px;
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; color: var(--accent4);
+    margin-bottom: 16px;
+  }
+
+  /* ─── CHART WRAPPER ─── */
+  .chart-container {
+    position: relative;
+    width: 100%;
+  }
+
+  /* ─── METRIC ROW ─── */
+  .metric-row {
+    display: flex; gap: 12px;
+    flex-wrap: wrap;
+  }
+
+  .metric-chip {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 14px;
+    text-align: center;
+    flex: 1;
+    min-width: 100px;
+  }
+
+  .metric-chip .val { font-size: 18px; font-weight: 800; }
+  .metric-chip .lbl { font-size: 9px; color: var(--text3); text-transform: uppercase; margin-top: 2px; }
+
+  /* ─── SCROLLBAR ─── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 10px; }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1200px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    .grid-5 { grid-template-columns: repeat(3, 1fr); }
+    .grid-custom, .grid-custom2, .grid-custom3 { grid-template-columns: 1fr; }
+  }
+
+  @media (max-width: 768px) {
+    .grid-4, .grid-3, .grid-2, .grid-5 { grid-template-columns: 1fr; }
+    .nav-tabs { display: none; }
+    main { padding: 12px 12px 30px; }
+    .kpi-value { font-size: 20px; }
+  }
+
+  .span-2 { grid-column: span 2; }
+  .span-3 { grid-column: span 3; }
+
+  /* ─── ANIMATION ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .animate { animation: fadeUp 0.5s ease forwards; }
+  .delay-1 { animation-delay: 0.1s; opacity: 0; }
+  .delay-2 { animation-delay: 0.2s; opacity: 0; }
+  .delay-3 { animation-delay: 0.3s; opacity: 0; }
+  .delay-4 { animation-delay: 0.4s; opacity: 0; }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--border), transparent);
+    margin: 8px 0;
+  }
+
+  .text-accent { color: var(--accent); }
+  .text-green { color: var(--accent3); }
+  .text-yellow { color: var(--accent4); }
+  .text-red { color: var(--accent5); }
+  .text-purple { color: #a78bfa; }
+  .text-sm { font-size: 11px; color: var(--text2); }
+
+  .fw-9 { font-weight: 900; }
+  .fw-7 { font-weight: 700; }
+</style>
+</head>
+<body>
+<div class="wrapper">
+
+<!-- ════════════════════════ HEADER ════════════════════════ -->
+<header>
+  <div class="header-inner">
+    <div class="logo-block">
+      <div class="logo-icon">⛽</div>
+      <div class="logo-text">
+        <h1>ИК «ПромТехСервис»</h1>
+        <p>Business Intelligence Dashboard</p>
+      </div>
+    </div>
+
+    <div class="nav-tabs">
+      <button class="nav-tab active">Обзор</button>
+      <button class="nav-tab">Обслуживание</button>
+      <button class="nav-tab">Строительство</button>
+      <button class="nav-tab">Конструкторы</button>
+      <button class="nav-tab">Финансы</button>
+      <button class="nav-tab">Транспорт</button>
+    </div>
+
+    <div class="header-right">
+      <div class="live-badge">
+        <div class="live-dot"></div>
+        LIVE
+      </div>
+      <div class="date-block" id="datetime"></div>
+    </div>
+  </div>
+</header>
+
+<!-- ════════════════════════ MAIN ════════════════════════ -->
+<main>
+
+  <!-- ALERT -->
+  <div class="alert-strip animate delay-1">
+    ⚠️ &nbsp;<strong>3 заявки</strong> ожидают согласования более 48 часов &nbsp;|&nbsp;
+    🔧 Объект <strong>«АЗС Казань-3»</strong> — критический срок сдачи через 12 дней &nbsp;|&nbsp;
+    🚗 Водитель <strong>Петров А.В.</strong> превысил лимит топлива на 18%
+  </div>
+
+  <!-- ════ SECTION 1: ГЛАВНЫЕ KPI ════ -->
+  <div class="section-title animate delay-1">
+    <div class="icon" style="background:rgba(0,212,255,0.15)">💰</div>
+    <h2>Ключевые показатели бизнеса</h2>
+    <span>Май 2025</span>
+  </div>
+
+  <div class="grid-5 animate delay-2">
+    <!-- Выручка -->
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent),#7c3aed)"></div>
+      <div class="bg-glow" style="background:var(--accent)"></div>
+      <div class="kpi-icon">📊</div>
+      <div class="kpi-label">Выручка (май)</div>
+      <div class="kpi-value text-accent">47,8 млн ₽</div>
+      <div class="kpi-sub trend-up">▲ +12,4% к апрелю</div>
+    </div>
+
+    <!-- Расходы -->
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent5),#f97316)"></div>
+      <div class="bg-glow" style="background:var(--accent5)"></div>
+      <div class="kpi-icon">💸</div>
+      <div class="kpi-label">Расходы (май)</div>
+      <div class="kpi-value text-red">31,2 млн ₽</div>
+      <div class="kpi-sub trend-down">▲ +6,1% к апрелю</div>
+    </div>
+
+    <!-- Прибыль -->
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent3),#06b6d4)"></div>
+      <div class="bg-glow" style="background:var(--accent3)"></div>
+      <div class="kpi-icon">🏆</div>
+      <div class="kpi-label">Чистая прибыль</div>
+      <div class="kpi-value text-green">16,6 млн ₽</div>
+      <div class="kpi-sub trend-up">▲ +23,7% к апрелю</div>
+    </div>
+
+    <!-- Рентабельность -->
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent4),var(--accent6))"></div>
+      <div class="bg-glow" style="background:var(--accent4)"></div>
+      <div class="kpi-icon">📈</div>
+      <div class="kpi-label">Рентабельность</div>
+      <div class="kpi-value text-yellow">34,7%</div>
+      <div class="kpi-sub trend-up">▲ +3,2 п.п.</div>
+    </div>
+
+    <!-- Активные проекты -->
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,#a78bfa,var(--accent6))"></div>
+      <div class="bg-glow" style="background:#7c3aed"></div>
+      <div class="kpi-icon">🗂️</div>
+      <div class="kpi-label">Активных проектов</div>
+      <div class="kpi-value text-purple">24</div>
+      <div class="kpi-sub">3 стройки · 8 КД · 13 АЗС</div>
+    </div>
+  </div>
+
+  <!-- Metric row small -->
+  <div class="metric-row animate delay-3" style="margin-top:14px">
+    <div class="metric-chip">
+      <div class="val text-accent">₽ 317</div>
+      <div class="lbl">тыс/сотрудник</div>
+    </div>
+    <div class="metric-chip">
+      <div class="val text-green">97,3%</div>
+      <div class="lbl">выполнение заявок</div>
+    </div>
+    <div class="metric-chip">
+      <div class="val text-yellow">43</div>
+      <div class="lbl">сотрудника</div>
+    </div>
+    <div class="metric-chip">
+      <div class="val text-purple">12</div>
+      <div class="lbl">транспортных ед.</div>
+    </div>
+    <div class="metric-chip">
+      <div class="val" style="color:#ec4899">186</div>
+      <div class="lbl">заявок в этом году</div>
+    </div>
+    <div class="metric-chip">
+      <div class="val text-accent">4,2 лет</div>
+      <div class="lbl">средний контракт</div>
+    </div>
+    <div class="metric-chip">
+      <div class="val text-green">28</div>
+      <div class="lbl">клиентов-АЗС</div>
+    </div>
+    <div class="metric-chip">
+      <div class="val text-yellow">NPS 72</div>
+      <div class="lbl">индекс лояльности</div>
+    </div>
+  </div>
+
+  <!-- ════ SECTION 2: ОБСЛУЖИВАНИЕ АЗС ════ -->
+  <div class="section-title animate delay-1" style="margin-top:36px">
+    <div class="icon" style="background:rgba(0,212,255,0.15)">🔧</div>
+    <h2>Обслуживание АЗС</h2>
+    <span>Сервисные заявки</span>
+  </div>
+
+  <!-- Pipeline -->
+  <div class="pipeline animate delay-2" style="margin-bottom:16px">
+    <div class="pipeline-stage">
+      <div class="stage-num text-accent">47</div>
+      <div class="stage-label">📥 Входящие</div>
+      <div class="stage-arrow">›</div>
+    </div>
+    <div class="pipeline-stage">
+      <div class="stage-num text-yellow">23</div>
+      <div class="stage-label">✅ Согласованные</div>
+      <div class="stage-arrow">›</div>
+    </div>
+    <div class="pipeline-stage">
+      <div class="stage-num" style="color:#a78bfa">31</div>
+      <div class="stage-label">🔨 В работе</div>
+      <div class="stage-arrow">›</div>
+    </div>
+    <div class="pipeline-stage">
+      <div class="stage-num text-green">89</div>
+      <div class="stage-label">🏁 Выполненные</div>
+      <div class="stage-arrow">›</div>
+    </div>
+    <div class="pipeline-stage">
+      <div class="stage-num" style="color:var(--text3)">156</div>
+      <div class="stage-label">📄 Закрыты/Докум.</div>
+    </div>
+  </div>
+
+  <div class="grid-custom animate delay-3">
+    <!-- Таблица заявок -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:16px 18px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border)">
+        <span style="font-size:13px;font-weight:700">Активные заявки</span>
+        <span class="badge badge-new">47 активных</span>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>№</th>
+              <th>Объект</th>
+              <th>Тип работ</th>
+              <th>Приоритет</th>
+              <th>Статус</th>
+              <th>Сумма, ₽</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="color:var(--text3)">АЗС-2047</td>
+              <td class="fw-7">Лукойл, Казань-1</td>
+              <td>ТО топливораздат.</td>
+              <td><span style="color:var(--accent5)">🔴 Срочно</span></td>
+              <td><span class="badge badge-new">Входящая</span></td>
+              <td class="text-accent fw-7">84 500</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3)">АЗС-2051</td>
+              <td class="fw-7">Роснефть, Уфа-5</td>
+              <td>Замена ТРК</td>
+              <td><span style="color:var(--accent4)">🟡 Высокий</span></td>
+              <td><span class="badge badge-approved">Согласована</span></td>
+              <td class="text-accent fw-7">216 000</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3)">АЗС-2039</td>
+              <td class="fw-7">Газпром, Самара-2</td>
+              <td>Ремонт систем КИП</td>
+              <td><span style="color:var(--accent4)">🟡 Высокий</span></td>
+              <td><span class="badge badge-approved">В работе</span></td>
+              <td class="text-accent fw-7">156 200</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3)">АЗС-2044</td>
+              <td class="fw-7">Лукойл, Екатерин.</td>
+              <td>Диагностика систем</td>
+              <td><span style="color:var(--accent3)">🟢 Норм.</span></td>
+              <td><span class="badge badge-done">Выполнена</span></td>
+              <td class="text-accent fw-7">48 700</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3)">АЗС-2038</td>
+              <td class="fw-7">Башнефть, Уфа-1</td>
+              <td>Технадзор / Пусконал.</td>
+              <td><span style="color:var(--accent3)">🟢 Норм.</span></td>
+              <td><span class="badge badge-done">Выполнена</span></td>
+              <td class="text-accent fw-7">73 400</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3)">АЗС-2035</td>
+              <td class="fw-7">Лукойл, Пермь-3</td>
+              <td>Поверка резервуаров</td>
+              <td><span style="color:var(--text3)">⚪ Низкий</span></td>
+              <td><span class="badge badge-closed">Закрыта</span></td>
+              <td class="text-accent fw-7">31 900</td>
+            </tr>
+            <tr>
+              <td style="color:var(--text3)">АЗС-2033</td>
+              <td class="fw-7">ТНК, Казань-7</td>
+              <td>ТО фильтров</td>
+              <td><span style="color:var(--text3)">⚪ Низкий</span></td>
+              <td><span class="badge badge-closed">Закрыта</span></td>
+              <td class="text-accent fw-7">22 100</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Выручка по направлению -->
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;margin-bottom:14px">Выручка: обслуживание</div>
+      <div style="font-size:28px;font-weight:900;color:var(--accent);margin-bottom:4px">18,4 млн ₽</div>
+      <div class="text-sm" style="margin-bottom:16px">▲ +8,1% vs апрель &nbsp;·&nbsp; план: 20 млн</div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Выполнение плана</span><span class="text-yellow">92%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:92%;background:linear-gradient(90deg,var(--accent),var(--accent2))"></div></div>
+      </div>
+      <div class="divider" style="margin:14px 0"></div>
+      <div class="chart-container" style="height:120px">
+        <canvas id="serviceChart"></canvas>
+      </div>
+      <div class="divider" style="margin:14px 0"></div>
+      <div style="font-size:12px;font-weight:700;margin-bottom:10px">Топ клиентов (выручка, ₽)</div>
+      <div>
+        <div class="progress-wrap" style="margin-bottom:8px">
+          <div class="progress-label"><span>Лукойл</span><span>7 240 000</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:78%;background:var(--accent)"></div></div>
+        </div>
+        <div class="progress-wrap" style="margin-bottom:8px">
+          <div class="progress-label"><span>Роснефть</span><span>4 810 000</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:52%;background:var(--accent2)"></div></div>
+        </div>
+        <div class="progress-wrap" style="margin-bottom:8px">
+          <div class="progress-label"><span>Газпром</span><span>3 640 000</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:39%;background:var(--accent3)"></div></div>
+        </div>
+        <div class="progress-wrap">
+          <div class="progress-label"><span>Башнефть</span><span>2 710 000</span></div>
+          <div class="progress-bar"><div class="progress-fill" style="width:29%;background:var(--accent4)"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Статистика -->
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;margin-bottom:14px">Время исполнения</div>
+      <div style="font-size:28px;font-weight:900;color:var(--accent3);margin-bottom:4px">2,8 дня</div>
+      <div class="text-sm" style="margin-bottom:12px">Среднее время закрытия заявки</div>
+      <div class="progress-wrap" style="margin-bottom:16px">
+        <div class="progress-label"><span>SLA соблюдение</span><span class="text-green">94%</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:94%;background:var(--accent3)"></div></div>
+      </div>
+      <div class="chart-container" style="height:100px">
+        <canvas id="slaChart"></canvas>
+      </div>
+      <div class="divider" style="margin:12px 0"></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:8px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px">Типы работ (май)</div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--accent)"></div>
+        <div class="legend-name">ТО и диагностика</div>
+        <div class="legend-val">38%</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--accent2)"></div>
+        <div class="legend-name">Замена оборудования</div>
+        <div class="legend-val">27%</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--accent3)"></div>
+        <div class="legend-name">Ремонтные работы</div>
+        <div class="legend-val">21%</div>
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:var(--accent4)"></div>
+        <div class="legend-name">Пусконаладка</div>
+        <div class="legend-val">14%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SECTION 3: СТРОИТЕЛЬСТВО ════ -->
+  <div class="section-title animate delay-1" style="margin-top:36px">
+    <div class="icon" style="background:rgba(124,58,237,0.15)">🏗️</div>
+    <h2>Строительство АЗС</h2>
+    <span>3 активных объекта</span>
+  </div>
+
+  <!-- Стройка KPI -->
+  <div class="grid-4 animate delay-2" style="margin-bottom:16px">
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,#a78bfa,var(--accent2))"></div>
+      <div class="kpi-label">Выручка (стройка)</div>
+      <div class="kpi-value text-purple">22,1 млн ₽</div>
+      <div class="kpi-sub trend-up">▲ +18,3% к апрелю</div>
+    </div>
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent5),#f97316)"></div>
+      <div class="kpi-label">Расходы (стройка)</div>
+      <div class="kpi-value text-red">15,8 млн ₽</div>
+      <div class="kpi-sub">себест. 71,5%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent3),var(--accent))"></div>
+      <div class="kpi-label">Маржа стройки</div>
+      <div class="kpi-value text-green">28,5%</div>
+      <div class="kpi-sub trend-up">▲ +4,1 п.п.</div>
+    </div>
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent4),var(--accent6))"></div>
+      <div class="kpi-label">Срок сдачи (ближ.)</div>
+      <div class="kpi-value text-yellow">12 дней</div>
+      <div class="kpi-sub" style="color:var(--accent5)">⚠️ Критичный срок</div>
+    </div>
+  </div>
+
+  <!-- Объекты строительства -->
+  <div class="grid-3 animate delay-3">
+
+    <!-- Объект 1 -->
+    <div class="building-card">
+      <div class="building-header">
+        <div>
+          <div class="building-name">АЗС «Казань-3»</div>
+          <div class="building-addr">📍 ул. Проспект Победы, 112</div>
+        </div>
+        <span class="badge badge-build">КРИТИЧНО</span>
+      </div>
+      <div style="display:flex;gap:20px;margin-bottom:14px">
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Контракт</div>
+          <div style="font-size:14px;font-weight:800;color:var(--accent)">38,5 млн ₽</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Готовность</div>
+          <div style="font-size:14px;font-weight:800;color:var(--accent5)">78%</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Дней до сдачи</div>
+          <div style="font-size:14px;font-weight:800;color:var(--accent4)">12</div>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Этапы строительства</div>
+      <div class="floors-visual">
+        <div class="floor-row">
+          <div class="floor-label">Кровля</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:90%;background:linear-gradient(90deg,var(--accent3),#059669)">✓ Смонтирована</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Фасад</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:85%;background:linear-gradient(90deg,var(--accent3),#059669)">✓ 85%</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Инженер.</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:70%;background:linear-gradient(90deg,var(--accent),#0284c7)">⚙ 70%</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Отделка</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:55%;background:linear-gradient(90deg,var(--accent4),#d97706)">🔨 55%</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Топливн.</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:40%;background:linear-gradient(90deg,var(--accent5),#dc2626)">⛽ 40%</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Фундамент</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:100%;background:linear-gradient(90deg,#374151,#4b5563)">✓ Готов</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-wrap" style="margin-top:12px">
+        <div class="progress-label"><span style="font-weight:700">Общая готовность</span><span class="text-accent fw-9">78%</span></div>
+        <div class="progress-bar" style="height:10px"><div class="progress-fill" style="width:78%;background:linear-gradient(90deg,var(--accent5),var(--accent4))"></div></div>
+      </div>
+    </div>
+
+    <!-- Объект 2 -->
+    <div class="building-card">
+      <div class="building-header">
+        <div>
+          <div class="building-name">АЗС «Уфа-8»</div>
+          <div class="building-addr">📍 ул. Шафиева, 44а</div>
+        </div>
+        <span class="badge badge-approved">В ГРАФИКЕ</span>
+      </div>
+      <div style="display:flex;gap:20px;margin-bottom:14px">
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Контракт</div>
+          <div style="font-size:14px;font-weight:800;color:var(--accent)">42,0 млн ₽</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Готовность</div>
+          <div style="font-size:14px;font-weight:800;color:var(--accent4)">51%</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Дней до сдачи</div>
+          <div style="font-size:14px;font-weight:800;color:var(--accent3)">47</div>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Этапы строительства</div>
+      <div class="floors-visual">
+        <div class="floor-row">
+          <div class="floor-label">Кровля</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:20%;background:linear-gradient(90deg,var(--accent5),#dc2626)">20%</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Фасад</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:10%;background:linear-gradient(90deg,var(--accent5),#dc2626)">10%</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Инженер.</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:60%;background:linear-gradient(90deg,var(--accent),#0284c7)">60%</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Отделка</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:35%;background:linear-gradient(90deg,var(--accent5),#dc2626)">35%</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Топливн.</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:75%;background:linear-gradient(90deg,var(--accent3),#059669)">75%</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Фундамент</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:100%;background:linear-gradient(90deg,#374151,#4b5563)">✓ Готов</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-wrap" style="margin-top:12px">
+        <div class="progress-label"><span style="font-weight:700">Общая готовность</span><span class="text-yellow fw-9">51%</span></div>
+        <div class="progress-bar" style="height:10px"><div class="progress-fill" style="width:51%;background:linear-gradient(90deg,var(--accent),var(--accent2))"></div></div>
+      </div>
+    </div>
+
+    <!-- Объект 3 -->
+    <div class="building-card">
+      <div class="building-header">
+        <div>
+          <div class="building-name">АЗС «Самара-Nord»</div>
+          <div class="building-addr">📍 Московское шоссе, 89</div>
+        </div>
+        <span class="badge badge-new">СТАРТ</span>
+      </div>
+      <div style="display:flex;gap:20px;margin-bottom:14px">
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Контракт</div>
+          <div style="font-size:14px;font-weight:800;color:var(--accent)">51,3 млн ₽</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Готовность</div>
+          <div style="font-size:14px;font-weight:800;color:var(--accent)">18%</div>
+        </div>
+        <div>
+          <div style="font-size:11px;color:var(--text3)">Дней до сдачи</div>
+          <div style="font-size:14px;font-weight:800;color:var(--accent3)">112</div>
+        </div>
+      </div>
+
+      <div style="font-size:10px;color:var(--text3);font-weight:700;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px">Этапы строительства</div>
+      <div class="floors-visual">
+        <div class="floor-row">
+          <div class="floor-label">Кровля</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:5%;background:linear-gradient(90deg,#374151,#4b5563)">—</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Фасад</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:5%;background:linear-gradient(90deg,#374151,#4b5563)">—</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Инженер.</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:5%;background:linear-gradient(90deg,#374151,#4b5563)">—</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Отделка</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:5%;background:linear-gradient(90deg,#374151,#4b5563)">—</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Топливн.</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:25%;background:linear-gradient(90deg,var(--accent4),#d97706)">25%</div>
+          </div>
+        </div>
+        <div class="floor-row">
+          <div class="floor-label">Фундамент</div>
+          <div class="floor-bar-wrap">
+            <div class="floor-bar" style="width:80%;background:linear-gradient(90deg,var(--accent),#0284c7)">🔨 80%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="progress-wrap" style="margin-top:12px">
+        <div class="progress-label"><span style="font-weight:700">Общая готовность</span><span class="text-accent fw-9">18%</span></div>
+        <div class="progress-bar" style="height:10px"><div class="progress-fill" style="width:18%;background:linear-gradient(90deg,var(--accent2),#a78bfa)"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SECTION 4: КОНСТРУКТОРСКИЙ ОТДЕЛ ════ -->
+  <div class="section-title animate delay-1" style="margin-top:36px">
+    <div class="icon" style="background:rgba(16,185,129,0.15)">📐</div>
+    <h2>Конструкторский отдел</h2>
+    <span>8 проектов в работе</span>
+  </div>
+
+  <div class="grid-4 animate delay-2" style="margin-bottom:16px">
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent3),#06b6d4)"></div>
+      <div class="kpi-label">Выручка КО (май)</div>
+      <div class="kpi-value text-green">7,3 млн ₽</div>
+      <div class="kpi-sub trend-up">▲ +14,2%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent4),var(--accent2))"></div>
+      <div class="kpi-label">Стадий завершено</div>
+      <div class="kpi-value text-yellow">23 / 38</div>
+      <div class="kpi-sub">60,5% по плану</div>
+    </div>
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,#a78bfa,var(--accent6))"></div>
+      <div class="kpi-label">Конструкторов</div>
+      <div class="kpi-value text-purple">8 чел.</div>
+      <div class="kpi-sub">загрузка 87%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent3),var(--accent))"></div>
+      <div class="kpi-label">Выручка/конструктор</div>
+      <div class="kpi-value text-green">912 тыс</div>
+      <div class="kpi-sub">₽ в месяц</div>
+    </div>
+  </div>
+
+  <div class="grid-custom2 animate delay-3">
+    <!-- Projects -->
+    <div class="card">
+      <div style="font-size:13px;font-weight:700;margin-bottom:16px">Проекты КД — стадии выполнения</div>
+
+      <!-- Стадии: П, Р, РД, ИД, НВ, АС -->
+      <div style="display:flex;gap:6px;margin-bottom:12px;font-size:9px;color:var(--text3)">
+        <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:#374151"></div>Не начата</div>
+        <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:var(--accent5)"></div>В работе</div>
+        <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:var(--accent4)"></div>На проверке</div>
+        <div style="display:flex;align-items:center;gap:4px"><div style="width:10px;height:10px;border-radius:2px;background:var(--accent3)"></div>Завершена</div>
+      </div>
+
+      <!-- Project 1 -->
+      <div class="project-card">
+        <div class="project-header">
+          <div>
+            <div class="project-name">АЗС «Нижнекамск-2»</div>
+            <div class="project-type">Полный комплект КД · Заказчик: Татнефть</div>
+          </div>
+          <span class="badge badge-approved">68% готов.</span>
+        </div>
+        <div style="font-size:9px;color:var(--text3);margin-bottom:6px;display:flex;gap:3px;font-weight:600">
+          <span style="flex:1;text-align:center">ПД</span>
+          <span style="flex:1;text-align:center">ТЗ</span>
+          <span style="flex:1;text-align:center">АС</span>
+          <span style="flex:1;text-align:center">КЖ</span>
+          <span style="flex:1;text-align:center">ОВ</span>
+          <span style="flex:1;text-align:center">ЭМ</span>
+          <span style="flex:1;text-align:center">ГП</span>
+          <span style="flex:1;text-align:center">ПБ</span>
+        </div>
+        <div class="stages-track">
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent4)">⏳</div>
+          <div class="stage-block" style="background:var(--accent5)">🔨</div>
+          <div class="stage-block" style="background:#374151">—</div>
+          <div class="stage-block" style="background:#374151">—</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3)">Ответственный: Иванов А.К. &nbsp;·&nbsp; Срок: 15.06.2025 &nbsp;·&nbsp; <span class="text-accent">18 200 000 ₽</span></div>
+      </div>
+
+      <!-- Project 2 -->
+      <div class="project-card">
+        <div class="project-header">
+          <div>
+            <div class="project-name">АЗС «Стерлитамак-1»</div>
+            <div class="project-type">Рабочий проект · Заказчик: Башнефть</div>
+          </div>
+          <span class="badge badge-new">38% готов.</span>
+        </div>
+        <div style="font-size:9px;color:var(--text3);margin-bottom:6px;display:flex;gap:3px;font-weight:600">
+          <span style="flex:1;text-align:center">ПД</span><span style="flex:1;text-align:center">ТЗ</span><span style="flex:1;text-align:center">АС</span><span style="flex:1;text-align:center">КЖ</span><span style="flex:1;text-align:center">ОВ</span><span style="flex:1;text-align:center">ЭМ</span><span style="flex:1;text-align:center">ГП</span><span style="flex:1;text-align:center">ПБ</span>
+        </div>
+        <div class="stages-track">
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent4)">⏳</div>
+          <div class="stage-block" style="background:var(--accent5)">🔨</div>
+          <div class="stage-block" style="background:#374151">—</div>
+          <div class="stage-block" style="background:#374151">—</div>
+          <div class="stage-block" style="background:#374151">—</div>
+          <div class="stage-block" style="background:#374151">—</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3)">Ответственный: Смирнова Е.В. &nbsp;·&nbsp; Срок: 30.07.2025 &nbsp;·&nbsp; <span class="text-accent">11 400 000 ₽</span></div>
+      </div>
+
+      <!-- Project 3 -->
+      <div class="project-card">
+        <div class="project-header">
+          <div>
+            <div class="project-name">МАЗС «Набережные Челны»</div>
+            <div class="project-type">Мини-АЗС, ПД+РД · Заказчик: ИП Гараев</div>
+          </div>
+          <span class="badge badge-done">100% готов.</span>
+        </div>
+        <div style="font-size:9px;color:var(--text3);margin-bottom:6px;display:flex;gap:3px;font-weight:600">
+          <span style="flex:1;text-align:center">ПД</span><span style="flex:1;text-align:center">ТЗ</span><span style="flex:1;text-align:center">АС</span><span style="flex:1;text-align:center">КЖ</span><span style="flex:1;text-align:center">ОВ</span><span style="flex:1;text-align:center">ЭМ</span><span style="flex:1;text-align:center">ГП</span><span style="flex:1;text-align:center">ПБ</span>
+        </div>
+        <div class="stages-track">
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3)">Ответственный: Петров М.Л. &nbsp;·&nbsp; Сдан: 02.05.2025 &nbsp;·&nbsp; <span class="text-green">7 800 000 ₽ ✓</span></div>
+      </div>
+
+      <!-- Project 4 -->
+      <div class="project-card">
+        <div class="project-header">
+          <div>
+            <div class="project-name">АЗС «Оренбург-Центр»</div>
+            <div class="project-type">Реконструкция АЗС · Заказчик: Лукойл</div>
+          </div>
+          <span class="badge badge-design">22% готов.</span>
+        </div>
+        <div style="font-size:9px;color:var(--text3);margin-bottom:6px;display:flex;gap:3px;font-weight:600">
+          <span style="flex:1;text-align:center">ПД</span><span style="flex:1;text-align:center">ТЗ</span><span style="flex:1;text-align:center">АС</span><span style="flex:1;text-align:center">КЖ</span><span style="flex:1;text-align:center">ОВ</span><span style="flex:1;text-align:center">ЭМ</span><span style="flex:1;text-align:center">ГП</span><span style="flex:1;text-align:center">ПБ</span>
+        </div>
+        <div class="stages-track">
+          <div class="stage-block" style="background:var(--accent3)">✓</div>
+          <div class="stage-block" style="background:var(--accent4)">⏳</div>
+          <div class="stage-block" style="background:#374151">—</div>
+          <div class="stage-block" style="background:#374151">—</div>
+          <div class="stage-block" style="background:#374151">—</div>
+          <div class="stage-block" style="background:#374151">—</div>
+          <div class="stage-block" style="background:#374151">—</div>
+          <div class="stage-block" style="background:#374151">—</div>
+        </div>
+        <div style="font-size:10px;color:var(--text3)">Ответственный: Козлов Д.С. &nbsp;·&nbsp; Срок: 15.09.2025 &nbsp;·&nbsp; <span class="text-accent">9 600 000 ₽</span></div>
+      </div>
+    </div>
+
+    <!-- KD Stats -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        <div style="font-size:12px;font-weight:700;margin-bottom:14px">Загрузка конструкторов</div>
+        <div class="chart-container" style="height:160px">
+          <canvas id="kdChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:700;margin-bottom:14px">Портфель КД (млн ₽)</div>
+        <div style="font-size:28px;font-weight:900;color:var(--accent3)">47,0 млн ₽</div>
+        <div class="text-sm" style="margin-bottom:12px">Бэклог на 2025 год</div>
+        <div class="divider"></div>
+        <div style="margin-top:12px">
+          <div class="progress-wrap" style="margin-bottom:8px">
+            <div class="progress-label"><span>Оплачено</span><span class="text-green">28,2 млн</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:60%;background:var(--accent3)"></div></div>
+          </div>
+          <div class="progress-wrap" style="margin-bottom:8px">
+            <div class="progress-label"><span>Ожидается</span><span class="text-yellow">13,4 млн</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:28%;background:var(--accent4)"></div></div>
+          </div>
+          <div class="progress-wrap">
+            <div class="progress-label"><span>Новые</span><span class="text-accent">5,4 млн</span></div>
+            <div class="progress-bar"><div class="progress-fill" style="width:12%;background:var(--accent)"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="font-size:12px;font-weight:700;margin-bottom:12px">Стадии всех проектов</div>
+        <div class="chart-container" style="height:130px">
+          <canvas id="stagesDonut"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SECTION 5: УЧЁТ ТОПЛИВА ════ -->
+  <div class="section-title animate delay-1" style="margin-top:36px">
+    <div class="icon" style="background:rgba(245,158,11,0.15)">🚗</div>
+    <h2>Топливные карты Лукойл</h2>
+    <span>12 транспортных единиц · Май 2025</span>
+  </div>
+
+  <!-- Fuel KPI -->
+  <div class="grid-5 animate delay-2" style="margin-bottom:16px">
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent4),#f97316)"></div>
+      <div class="kpi-label">Топливо (май)</div>
+      <div class="kpi-value text-yellow">4 847 л</div>
+      <div class="kpi-sub trend-up">▲ +7,3% к апрелю</div>
+    </div>
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent),#0ea5e9)"></div>
+      <div class="kpi-label">Пробег (май)</div>
+      <div class="kpi-value text-accent">38 420 км</div>
+      <div class="kpi-sub">ср. 3 202 км/авто</div>
+    </div>
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent3),#06b6d4)"></div>
+      <div class="kpi-label">Расход (сред.)</div>
+      <div class="kpi-value text-green">12,6 л/100</div>
+      <div class="kpi-sub trend-down">▼ −0,4 л/100 (хорошо)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,var(--accent5),var(--accent4))"></div>
+      <div class="kpi-label">Расходы топливо</div>
+      <div class="kpi-value text-red">281 тыс ₽</div>
+      <div class="kpi-sub">58,1 ₽/л среднее</div>
+    </div>
+    <div class="kpi-card">
+      <div class="accent-line" style="background:linear-gradient(90deg,#ec4899,var(--accent2))"></div>
+      <div class="kpi-label">Аномалии</div>
+      <div class="kpi-value" style="color:#ec4899">2</div>
+      <div class="kpi-sub" style="color:var(--accent5)">⚠️ требуют проверки</div>
+    </div>
+  </div>
+
+  <div class="grid-custom3 animate delay-3">
+    <!-- Drivers table -->
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;margin-bottom:16px">Журнал водителей</div>
+
+      <div class="driver-row">
+        <div class="driver-avatar" style="background:linear-gradient(135deg,var(--accent),var(--accent2))">АИ</div>
+        <div class="driver-info">
+          <div class="driver-name">Алиев И.Р.</div>
+          <div class="driver-car">КАМАЗ 43118 · Т142ОМ716</div>
+          <div class="progress-bar" style="margin-top:4px"><div class="progress-fill" style="width:68%;background:var(--accent3)"></div></div>
+        </div>
+        <div class="driver-stats">
+          <div class="driver-stat-item">
+            <div class="driver-stat-val text-yellow">612 л</div>
+            <div class="driver-stat-label">Топливо</div>
+          </div>
+          <div class="driver-stat-item">
+            <div class="driver-stat-val text-accent">4 840 км</div>
+            <div class="driver-stat-label">Пробег</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="driver-row">
+        <div class="driver-avatar" style="background:linear-gradient(135deg,var(--accent3),#0284c7)">ПА</div>
+        <div class="driver-info">
+          <div class="driver-name">Петров А.В.</div>
+          <div class="driver-car">ГАЗель Next · О881АМ116</div>
+          <div style="display:flex;align-items:center;gap:6px;margin-top:4px">
+            <div class="progress-bar" style="flex:1"><div class="progress-fill" style="width:118%;max-width:100%;background:var(--accent5)"></div></div>
+            <span style="font-size:9px;color:var(--accent5)">+18% лимит</span>
+          </div>
+        </div>
+        <div class="driver-stats">
+          <div class="driver-stat-item">
+            <div class="driver-stat-val text-red">472 л</div>
+            <div class="driver-stat-label">Топливо</div>
+          </div>
+          <div class="driver-stat-item">
+            <div class="driver-stat-val text-accent">3 210 км</div>
+            <div class="driver-stat-label">Пробег</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="driver-row">
+        <div class="driver-avatar" style="background:linear-gradient(135deg,var(--accent4),#f97316)">МС</div>
+        <div class="driver-info">
+          <div class="driver-name">Мухаметов С.Р.</div>
+          <div class="driver-car">Ford Transit · Р344КК116</div>
+          <div class="progress-bar" style="margin-top:4px"><div class="progress-fill" style="width:82%;background:var(--accent4)"></div></div>
+        </div>
+        <div class="driver-stats">
+          <div class="driver-stat-item">
+            <div class="driver-stat-val text-yellow">384 л</div>
+            <div class="driver-stat-label">Топливо</div>
+          </div>
+          <div class="driver-stat-item">
+            <div class="driver-stat-val text-accent">3 670 км</div>
+            <div class="driver-stat-label">Пробег</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="driver-row">
+        <div class="driver-avatar" style="background:linear-gradient(135deg,#a78bfa,var(--accent6))">ГД</div>
+        <div class="driver-info">
+          <div class="driver-name">Гарипов Д.Н.</div>
+          <div class="driver-car">VW Crafter · У219НА116</div>
+          <div class="progress-bar" style="margin-top:4px"><div class="progress-fill" style="width:55%;background:var(--accent3)"></div></div>
+        </div>
+        <div class="driver-stats">
+          <div class="driver-stat-item">
+            <div class="driver-stat-val text-green">298 л</div>
+            <div class="driver-stat-label">Топливо</div>
+          </div>
+          <div class="driver-stat-item">
+            <div class="driver-stat-val text-accent">2 890 км</div>
+            <div class="driver-stat-label">Пробег</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="driver-row">
+        <div class="driver-avatar" style="background:linear-gradient(135deg,var(--accent5),#f97316)">ФР</div>
+        <div class="driver-info">
+          <div class="driver-name">Фёдоров Р.В.</div>
+          <div class="driver-car">Hyundai HD78 · К447ВО716</div>
+          <div class="progress-bar" style="margin-top:4px"><div class="progress-fill" style="width:72%;background:var(--accent)"></div></div>
+        </div>
+        <div class="driver-stats">
+          <div class="driver-stat-item">
+            <div class="driver-stat-val text-yellow">341 л</div>
+            <div class="driver-stat-label">Топливо</div>
+          </div>
+          <div class="driver-stat-item">
+            <div class="driver-stat-val text-accent">3 120 км</div>
+            <div class="driver-stat-label">Пробег</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="driver-row" style="border-bottom:none">
+        <div class="driver-avatar" style="background:linear-gradient(135deg,#06b6d4,var(--accent3))">НВ</div>
+        <div class="driver-info">
+          <div class="driver-name">Нуриев В.А.</div>
+          <div class="driver-car">МАЗ 5340 · Е881РУ116</div>
+          <div class="progress-bar" style="margin-top:4px"><div class="progress-fill" style="width:91%;background:var(--accent4)"></div></div>
+        </div>
+        <div class="driver-stats">
+          <div class="driver-stat-item">
+            <div class="driver-stat-val text-yellow">528 л</div>
+            <div class="driver-stat-label">Топливо</div>
+          </div>
+          <div class="driver-stat-item">
+            <div class="driver-stat-val text-accent">4 120 км</div>
+            <div class="driver-stat-label">Пробег</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fuel Chart -->
+    <div class="card">
+      <div style="font-size:12px;font-weight:700;margin-bottom:14px">Расход топлива по неделям</div>
+      <div class="chart-container" style="height:180px">
+        <canvas id="fuelWeek"></canvas>
+      </div>
+      <div class="divider" style="margin:14px 0"></div>
+      <div style="font-size:12px;font-weight:700;margin-bottom:10px">Топ-5 маршрутов (км)</div>
+      <div class="progress-wrap" style="margin-bottom:7px">
+        <div class="progress-label"><span>Казань → Уфа → Казань</span><span>1 440 км</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--accent)"></div></div>
+      </div>
+      <div class="progress-wrap" style="margin-bottom:7px">
+        <div class="progress-label"><span>Казань → Самара → Казань</span><span>1 080 км</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:75%;background:var(--accent3)"></div></div>
+      </div>
+      <div class="progress-wrap" style="margin-bottom:7px">
+        <div class="progress-label"><span>Уфа → Оренбург → Уфа</span><span>760 км</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:53%;background:var(--accent2)"></div></div>
+      </div>
+      <div class="progress-wrap" style="margin-bottom:7px">
+        <div class="progress-label"><span>Казань → Набережн. Челны</span><span>490 км</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:34%;background:var(--accent4)"></div></div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>Самара → Тольятти</span><span>180 км</span></div>
+        <div class="progress-bar"><div class="progress-fill" style="width:12%;background:var(--accent5)"></div></div>
+      </div>
+    </div>
+
+    <!-- Fuel anomaly & stats -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <div class="card">
+        <div style="font-size:12px;font-weight:700;margin-bottom:14px">Расход по ТС (л/100 км)</div>
+        <div class="chart-container" style="height:200px">
+          <canvas id="fuelRateChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card" style="border-color:rgba(239,68,68,0.3)">
+        <div style="font-size:12px;font-weight:700;color:var(--accent5);margin-bottom:12px">⚠️ Аномалии — требуют проверки</div>
+        <div style="background:rgba(239,68,68,0.07);border-radius:10px;padding:12px;margin-bottom:8px;border:1px solid rgba(239,68,68,0.15)">
+          <div style="font-size:12px;font-weight:700;margin-bottom:4px">Петров А.В. — ГАЗель Next</div>
+          <div class="text-sm">Превышение лимита на 18% · Заправка в 02:47 ночи · 65 л за раз</div>
+        </div>
+        <div style="background:rgba(239,68,68,0.07);border-radius:10px;padding:12px;border:1px solid rgba(239,68,68,0.15)">
+          <div style="font-size:12px;font-weight:700;margin-bottom:4px">Алиев И.Р. — КАМАЗ</div>
+          <div class="text-sm">Расход 18,4 л/100 (норма 15,0 л) · Возможна утечка или посторонний слив</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ SECTION 6: P&L ════ -->
+  <div class="section-title animate delay-1" style="margin-top:36px">
+    <div class="icon" style="background:rgba(16,185,129,0.15)">📋</div>
+    <h2>P&L — Отчёт о прибылях и убытках</h2>
+    <span>Май 2025</span>
+  </div>
+
+  <div class="grid-2 animate delay-2">
+    <!-- PL Table -->
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:13px;font-weight:700">Детальный P&L (май 2025)</span>
+        <span class="badge badge-done">Рентабельность 34,7%</span>
+      </div>
+      <table class="pl-table">
+        <tbody>
+          <tr class="pl-section-row"><td colspan="3">ВЫРУЧКА</td></tr>
+          <tr class="pl-row">
+            <td>Обслуживание АЗС</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">38,5%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent)">18 400 000</td>
+          </tr>
+          <tr class="pl-row">
+            <td>Строительство АЗС</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">46,2%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent)">22 100 000</td>
+          </tr>
+          <tr class="pl-row">
+            <td>Конструкторские работы</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">15,3%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent)">7 300 000</td>
+          </tr>
+          <tr class="pl-total">
+            <td>ИТОГО ВЫРУЧКА</td>
+            <td style="text-align:right;color:var(--text2)">100%</td>
+            <td style="text-align:right;color:var(--accent)">47 800 000</td>
+          </tr>
+
+          <tr class="pl-section-row"><td colspan="3">ПРЯМЫЕ РАСХОДЫ (себестоимость)</td></tr>
+          <tr class="pl-row">
+            <td>Материалы и оборудование</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">27,1%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">12 960 000</td>
+          </tr>
+          <tr class="pl-row">
+            <td>ФОТ производственный</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">14,2%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">6 790 000</td>
+          </tr>
+          <tr class="pl-row">
+            <td>Субподряд</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">6,3%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">3 010 000</td>
+          </tr>
+          <tr class="pl-total">
+            <td>ВАЛОВАЯ ПРИБЫЛЬ</td>
+            <td style="text-align:right;color:var(--accent3)">52,4%</td>
+            <td style="text-align:right;color:var(--accent3)">25 040 000</td>
+          </tr>
+
+          <tr class="pl-section-row"><td colspan="3">ОПЕРАЦИОННЫЕ РАСХОДЫ</td></tr>
+          <tr class="pl-row">
+            <td>ФОТ офис, КО, управление</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">7,4%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">3 540 000</td>
+          </tr>
+          <tr class="pl-row">
+            <td>Транспорт и топливо</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">1,2%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">574 000</td>
+          </tr>
+          <tr class="pl-row">
+            <td>Аренда офиса / склад</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">0,9%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">430 000</td>
+          </tr>
+          <tr class="pl-row">
+            <td>Телефония, IT, ПО</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">0,3%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">143 000</td>
+          </tr>
+          <tr class="pl-row">
+            <td>Командировочные расходы</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">0,6%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">287 000</td>
+          </tr>
+          <tr class="pl-row">
+            <td>Маркетинг и реклама</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">0,2%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">96 000</td>
+          </tr>
+          <tr class="pl-row">
+            <td>Прочие операционные</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">0,5%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">239 000</td>
+          </tr>
+
+          <tr class="pl-section-row"><td colspan="3">НАЛОГИ И ФИНАНСЫ</td></tr>
+          <tr class="pl-row">
+            <td>НДС (к уплате)</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">3,4%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">1 625 000</td>
+          </tr>
+          <tr class="pl-row">
+            <td>Налог на прибыль (25%)</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">4,7%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">2 247 000</td>
+          </tr>
+          <tr class="pl-row">
+            <td>Страховые взносы</td>
+            <td style="text-align:right;color:var(--text2);font-size:11px">1,8%</td>
+            <td style="text-align:right;font-weight:700;color:var(--accent5)">860 000</td>
+          </tr>
+
+          <tr class="pl-profit">
+            <td>💰 ЧИСТАЯ ПРИБЫЛЬ</td>
+            <td style="text-align:right">34,7%</td>
+            <td style="text-align:right">16 600 000 ₽</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Charts side -->
+    <div style="display:flex;flex-direction:column;gap:16px">
+
+      <!-- Revenue donut -->
+      <div class="card">
+        <div style="font-size:12px;font-weight:700;margin-bottom:14px">Структура выручки</div>
+        <div class="donut-wrap">
+          <div style="width:140px;height:140px;flex-shrink:0">
+            <canvas id="revDonut"></canvas>
+          </div>
+          <div class="donut-legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--accent)"></div>
+              <div class="legend-name">Стройка АЗС</div>
+              <div class="legend-val">22,1 млн</div>
+              <div class="legend-pct">46%</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--accent2)"></div>
+              <div class="legend-name">Обслуживание</div>
+              <div class="legend-val">18,4 млн</div>
+              <div class="legend-pct">38%</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:var(--accent3)"></div>
+              <div class="legend-name">КД проекты</div>
+              <div class="legend-val">7,3 млн</div>
+              <div class="legend-pct">16%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly trend -->
+      <div class="card">
+        <div style="font-size:12px;font-weight:700;margin-bottom:14px">Динамика выручки и прибыли (2025)</div>
+        <div class="chart-container" style="height:180px">
+          <canvas id="monthTrend"></canvas>
+        </div>
+      </div>
+
+      <!-- Expenses donut -->
+      <div class="card">
+        <div style="font-size:12px;font-weight:700;margin-bottom:14px">Структура расходов</div>
+        <div class="donut-wrap">
+          <div style="width:130px;height:130px;flex-shrink:0">
+            <canvas id="expDonut"></canvas>
+          </div>
+          <div class="donut-legend">
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#ef4444"></div>
+              <div class="legend-name">Материалы</div>
+              <div class="legend-val">12,96 млн</div>
+              <div class="legend-pct">41%</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#f97316"></div>
+              <div class="legend-name">ФОТ произв.</div>
+              <div class="legend-val">6,79 млн</div>
+              <div class="legend-pct">22%</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#a78bfa"></div>
+              <div class="legend-name">ФОТ офис</div>
+              <div class="legend-val">3,54 млн</div>
+              <div class="legend-pct">11%</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#fbbf24"></div>
+              <div class="legend-name">Субподряд</div>
+              <div class="legend-val">3,01 млн</div>
+              <div class="legend-pct">10%</div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot" style="background:#10b981"></div>
+              <div class="legend-name">Налоги</div>
+              <div class="legend-val">4,73 млн</div>
+              <div class="legend-pct">15%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ROI cards -->
+      <div class="grid-3" style="gap:10px">
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:var(--accent3)">34,7%</div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:3px">Рент. продаж</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:var(--accent4)">52,4%</div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:3px">Валов. маржа</div>
+        </div>
+        <div style="background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:14px;text-align:center">
+          <div style="font-size:20px;font-weight:900;color:var(--accent)">×2,8</div>
+          <div style="font-size:9px;color:var(--text3);text-transform:uppercase;margin-top:3px">ROE (год)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ FOOTER ════ -->
+  <div style="text-align:center;margin-top:40px;padding-top:20px;border-top:1px solid var(--border)">
+    <div style="font-size:11px;color:var(--text3)">
+      ИК «ПромТехСервис» · Business Intelligence Dashboard · Все данные обновляются в реальном времени
+      <br>Разработано на платформе <span class="text-accent">PTS Analytics Engine v3.1</span> · 
+      <span class="text-green">● Система работает штатно</span>
+    </div>
+  </div>
+
+</main>
+</div>
+
+<script>
+// ─── DATETIME ───
+function updateTime() {
+  const now = new Date();
+  const options = { day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit', second:'2-digit' };
+  document.getElementById('datetime').textContent = now.toLocaleString('ru-RU', options);
+}
+updateTime();
+setInterval(updateTime, 1000);
+
+// ─── CHART DEFAULTS ───
+Chart.defaults.color = '#64748b';
+Chart.defaults.font.family = 'Inter';
+Chart.defaults.font.size = 10;
+
+const gridColor = 'rgba(30,45,74,0.8)';
+
+// ─── SERVICE REVENUE CHART ───
+new Chart(document.getElementById('serviceChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Янв','Фев','Мар','Апр','Май'],
+    datasets: [{
+      label: 'Выручка, тыс. ₽',
+      data: [14200, 15800, 16400, 17010, 18400],
+      backgroundColor: 'rgba(0,212,255,0.2)',
+      borderColor: '#00d4ff',
+      borderWidth: 2,
+      borderRadius: 6,
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { color: '#64748b' } },
+      y: { grid: { color: gridColor }, ticks: { color: '#64748b' } }
+    }
+  }
+});
+
+// ─── SLA CHART ───
+new Chart(document.getElementById('slaChart'), {
+  type: 'line',
+  data: {
+    labels: ['Янв','Фев','Мар','Апр','Май'],
+    datasets: [{
+      label: 'SLA %',
+      data: [88, 90, 91, 93, 94],
+      borderColor: '#10b981',
+      backgroundColor: 'rgba(16,185,129,0.1)',
+      fill: true,
+      tension: 0.4,
+      pointRadius: 3,
+      borderWidth: 2
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridColor } },
+      y: { min: 80, max: 100, grid: { color: gridColor } }
+    }
+  }
+});
+
+// ─── KD CHART ───
+new Chart(document.getElementById('kdChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Иванов', 'Смирнова', 'Петров', 'Козлов', 'Нургалиев', 'Сафина', 'Яковлев', 'Борисова'],
+    datasets: [{
+      label: 'Загрузка %',
+      data: [95, 88, 100, 72, 84, 91, 68, 76],
+      backgroundColor: [
+        'rgba(0,212,255,0.6)', 'rgba(124,58,237,0.6)', 'rgba(239,68,68,0.6)',
+        'rgba(16,185,129,0.6)', 'rgba(245,158,11,0.6)', 'rgba(236,72,153,0.6)',
+        'rgba(167,139,250,0.6)', 'rgba(6,182,212,0.6)'
+      ],
+      borderRadius: 5,
+      borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { display: false } },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { font: { size: 9 } } },
+      y: { max: 110, grid: { color: gridColor }, ticks: { callback: v => v + '%' } }
+    }
+  }
+});
+
+// ─── STAGES DONUT ───
+new Chart(document.getElementById('stagesDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Завершено', 'В работе', 'На проверке', 'Не начато'],
+    datasets: [{
+      data: [23, 8, 4, 3],
+      backgroundColor: ['#10b981','#ef4444','#f59e0b','#374151'],
+      borderWidth: 0, hoverOffset: 4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '65%',
+    plugins: {
+      legend: { position: 'right', labels: { boxWidth: 10, padding: 8, font: { size: 10 } } }
+    }
+  }
+});
+
+// ─── FUEL WEEK CHART ───
+new Chart(document.getElementById('fuelWeek'), {
+  type: 'line',
+  data: {
+    labels: ['1-7 мая','8-14 мая','15-21 мая','22-28 мая','29-31 мая'],
+    datasets: [
+      {
+        label: 'Литры',
+        data: [1120, 1340, 980, 1210, 197],
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245,158,11,0.1)',
+        fill: true, tension: 0.4, pointRadius: 4, borderWidth: 2
+      },
+      {
+        label: 'Расходы, тыс. ₽',
+        data: [65, 78, 57, 70, 11],
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239,68,68,0.05)',
+        fill: false, tension: 0.4, pointRadius: 4, borderWidth: 2,
+        yAxisID: 'y2'
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { boxWidth: 10, padding: 8 } } },
+    scales: {
+      x: { grid: { color: gridColor } },
+      y: { grid: { color: gridColor }, position: 'left' },
+      y2: { grid: { display: false }, position: 'right' }
+    }
+  }
+});
+
+// ─── FUEL RATE CHART ───
+new Chart(document.getElementById('fuelRateChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Алиев', 'Петров', 'Мухам.', 'Гарипов', 'Фёдоров', 'Нуриев'],
+    datasets: [{
+      label: 'л/100 км',
+      data: [18.4, 14.7, 12.1, 11.8, 13.4, 12.8],
+      backgroundColor: ['rgba(239,68,68,0.7)','rgba(245,158,11,0.7)','rgba(16,185,129,0.7)','rgba(16,185,129,0.7)','rgba(245,158,11,0.7)','rgba(16,185,129,0.7)'],
+      borderRadius: 6, borderWidth: 0
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: {
+      legend: { display: false },
+      annotation: {}
+    },
+    scales: {
+      x: { grid: { color: gridColor }, ticks: { font: { size: 9 } } },
+      y: { grid: { color: gridColor }, ticks: { callback: v => v + ' л' } }
+    }
+  }
+});
+
+// ─── REVENUE DONUT ───
+new Chart(document.getElementById('revDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Стройка', 'Обслуж.', 'КД'],
+    datasets: [{
+      data: [22100000, 18400000, 7300000],
+      backgroundColor: ['#00d4ff','#7c3aed','#10b981'],
+      borderWidth: 0, hoverOffset: 6
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '70%',
+    plugins: { legend: { display: false } }
+  }
+});
+
+// ─── MONTHLY TREND ───
+new Chart(document.getElementById('monthTrend'), {
+  type: 'bar',
+  data: {
+    labels: ['Янв','Фев','Мар','Апр','Май'],
+    datasets: [
+      {
+        label: 'Выручка',
+        data: [38200, 40100, 42800, 42500, 47800],
+        backgroundColor: 'rgba(0,212,255,0.25)',
+        borderColor: '#00d4ff',
+        borderWidth: 2,
+        borderRadius: 6,
+        yAxisID: 'y'
+      },
+      {
+        label: 'Прибыль',
+        data: [10800, 11400, 12700, 13420, 16600],
+        backgroundColor: 'rgba(16,185,129,0.25)',
+        borderColor: '#10b981',
+        borderWidth: 2,
+        borderRadius: 6,
+        yAxisID: 'y'
+      }
+    ]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { boxWidth: 10, padding: 8 } } },
+    scales: {
+      x: { grid: { color: gridColor } },
+      y: { grid: { color: gridColor }, ticks: { callback: v => (v/1000) + 'к ₽' } }
+    }
+  }
+});
+
+// ─── EXPENSES DONUT ───
+new Chart(document.getElementById('expDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Материалы','ФОТ пр.','ФОТ офис','Субподряд','Налоги'],
+    datasets: [{
+      data: [12960, 6790, 3540, 3010, 4732],
+      backgroundColor: ['#ef4444','#f97316','#a78bfa','#fbbf24','#10b981'],
+      borderWidth: 0, hoverOffset: 4
+    }]
+  },
+  options: {
+    responsive: true, maintainAspectRatio: false,
+    cutout: '65%',
+    plugins: { legend: { display: false } }
+  }
+});
+
+// ─── ANIMATE COUNTERS ───
+function animateValue(el, start, end, duration, suffix='') {
+  const range = end - start;
+  const increment = range / (duration / 16);
+  let current = start;
+  const timer = setInterval(() => {
+    current += increment;
+    if ((increment > 0 && current >= end) || (increment < 0 && current <= end)) {
+      current = end;
+      clearInterval(timer);
+    }
+    el.textContent = Math.round(current).toLocaleString('ru-RU') + suffix;
+  }, 16);
+}
+</script>
+</body>
+</html>
